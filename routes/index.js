@@ -1,9 +1,1 @@
-var express = require('express');
-var router = express.Router();
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Something' });
-});
-
-module.exports = router;
+var express = require('express');var router = express.Router();var Datastore = require('nedb');var db = {};db.movies = new Datastore({filename: 'db/movies', autoload: true});/* GET home page. */router.get('/', function(req, res, next) {  res.send("Api working!");}).post('/rpc', function(req, res){        var body = req.body;        var respond = function (err, results)        {            if (err)            {                res.send(JSON.stringify(err));            }            else            {                res.send(JSON.stringify(results))            }        }        res.set('Content-type', 'application/json');        switch (body.action)        {            case "getMovies":                db.movies.find({}, respond);                break;            case "addMovie":                db.movies.insert({ title: body.title}, respond);                break;            case "rateMovie":                db.movies.update({title: body.title}, { $set: { rating: body.rating } }, function(err, num){                    respond(err, {success: num + " records updated"});                });                break;            default:                respond("No action given");        }});module.exports = router;
